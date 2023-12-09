@@ -9,10 +9,9 @@ const CLIENT_SECRET = "A7myX-DiEa5IgfUayzyqbxwVQJ9cQjdB";
 const REDIRECT_URI = "https://discord.com";
 
 const CURRENT_USER_API = "/users/@me";
+const CHANNEL_API = "v9/channels/888201877366398976/messages";
 
 let g_tokens;
-
-console.log({ g_tokens });
 
 /**
  * Tabs update listener
@@ -34,14 +33,23 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   switch (request.type) {
     case "CLICKED_OAUTH_BTN": {
-      openNewTab(
-        "https://discord.com/oauth2/authorize?client_id=" +
-          CLIENT_ID +
-          "&redirect_uri=" +
-          encodeURIComponent(REDIRECT_URI) +
-          "&response_type=token&scope=identify"
-      );
+      const authUrl = `https://discord.com/api/oauth2/authorize?client_id=${CLIENT_ID}&permissions=3072&response_type=code&redirect_uri=${encodeURIComponent(
+        REDIRECT_URI
+      )}&scope=bot+identify`;
+
+      openNewTab(authUrl);
       sendResponse(true);
+      break;
+    }
+    case "SEND_SONG_TO_DISCORD": {
+      if (g_tokens && g_tokens.access_token) {
+        apiCall(CHANNEL_API, "POST", g_tokens, {
+          mobile_network_type: "unknown",
+          content: `<@483377420494176258> 12312312 ${request.url}`,
+          tts: false,
+          flags: 0,
+        });
+      }
       break;
     }
     case "CHECK_AUTH": {
@@ -138,8 +146,10 @@ const getAccessToken = (refresh_token) => {
  * @param {string} api endpoints
  * @param {string} method 'GET', 'POST', ....
  * @param {object} tokens
+ * @param {object} body
  */
-const apiCall = (api, method, tokens) => {
+const apiCall = (api, method, tokens, body = undefined) => {
+  console.log({ tokens });
   return new Promise((resolve, reject) => {
     fetch("https://discord.com/api" + api, {
       method: method,
@@ -147,6 +157,7 @@ const apiCall = (api, method, tokens) => {
         Authorization: `${tokens.token_type} ${tokens.access_token}`,
         "Content-Type": "application/x-www/form-urlencoded",
       },
+      body: body,
     })
       .then((resp) => {
         console.log("~~~~~~~~~~~ resp", resp);

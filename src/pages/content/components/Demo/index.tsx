@@ -1,21 +1,32 @@
 import { createRoot } from "react-dom/client";
 import App from "@src/pages/content/components/Demo/app";
 import refreshOnUpdate from "virtual:reload-on-update-in-view";
+import "../../style.css";
 
 refreshOnUpdate("pages/content");
 
-const root = document.createElement("div");
-root.id = "discord-bot-button";
+function waitForModal() {
+  const modalList = document.getElementsByTagName(
+    "ytmusic-unified-share-panel-renderer"
+  );
 
-const buttonList = document.getElementsByTagName('ytmusic-like-button-renderer')
+  if (modalList.length > 0) {
+    insertContentScript(modalList[0]);
+  } else {
+    // Modal not open yet, retry after a short delay
+    setTimeout(waitForModal, 600);
+  }
+}
 
+// Start waiting for the modal
+waitForModal();
 
-document.querySelectorAll("ytmusic-like-button-renderer").forEach((element, index) => {
-  console.log('3')
-  root.id = `discord-bot-button-${index}`;
-  element.appendChild(root);
-});
+function insertContentScript(modal) {
+  // Your content script logic goes here
+  console.log(modal);
+  const root = document.createElement("div");
+  root.id = `discord-root`;
 
-
-
-createRoot(root).render(<App />);
+  modal?.appendChild(root);
+  createRoot(root).render(<App key={`discord`} />);
+}

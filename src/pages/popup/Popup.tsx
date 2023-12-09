@@ -11,6 +11,7 @@ const Popup = ({
 
   useEffect(() => {
     chrome.runtime.sendMessage({ type: "CHECK_AUTH" }, function (response) {
+      console.log("response", response)
       setAuth(!!response);
     });
   }, []);

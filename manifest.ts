@@ -18,12 +18,13 @@ const manifest: chrome.runtime.ManifestV3 = {
     default_popup: "src/pages/popup/index.html",
     default_icon: "icon-34.png",
   },
+  host_permissions: ["https://discord.com/*"],
   icons: {
     "128": "icon-128.png",
   },
   content_scripts: [
     {
-      matches: ["http://*/*", "https://*/*", "<all_urls>"],
+      matches: ["*://music.youtube.com/*"],
       js: ["src/pages/content/index.js"],
       // KEY for cache invalidation
       css: ["assets/css/contentStyle<KEY>.chunk.css"],
@@ -33,6 +34,7 @@ const manifest: chrome.runtime.ManifestV3 = {
     {
       resources: [
         "assets/js/*.js",
+        "assets/*",
         "assets/css/*.css",
         "icon-128.png",
         "icon-34.png",
