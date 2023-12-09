@@ -7,13 +7,15 @@ refreshOnUpdate("pages/content");
 const root = document.createElement("div");
 root.id = "discord-bot-button";
 
-const buttonsRenderList = document.getElementsByTagName(
-  "ytmusic-like-button-renderer"
-);
+const buttonList = document.getElementsByTagName('ytmusic-like-button-renderer')
 
-const shadowRoot = root.attachShadow({ mode: "open" });
 
-const renderIn = document.createElement("div");
-shadowRoot.appendChild(renderIn);
+document.querySelectorAll("ytmusic-like-button-renderer").forEach((element, index) => {
+  console.log('3')
+  root.id = `discord-bot-button-${index}`;
+  element.appendChild(root);
+});
+
+
 
 createRoot(root).render(<App />);
