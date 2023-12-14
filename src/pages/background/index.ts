@@ -1,7 +1,7 @@
 import reloadOnUpdate from "virtual:reload-on-update-in-background-script";
-import { getParams } from "./misc";
+import { getParams, openNewTab } from "./misc";
 import { fetchDiscordWithAuth } from "./utils/fetchUtils";
-import { getAccessTokenFromCode } from "./utils/authUtils";
+import { getAccessTokenFromCode, getAuthUrl } from "./utils/authUtils";
 
 reloadOnUpdate("pages/background");
 
@@ -25,30 +25,31 @@ chrome.storage.local.get("g_tokens", (result) => {
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   const url = tab.url;
 
-  if (
-    url &&
-    (url.includes(REDIRECT_URI + "/?code=") ||
-      url.includes(REDIRECT_URI + "/#token_type"))
-  ) {
+  if (url && url.includes(REDIRECT_URI + "/?code=")) {
     let params = getParams(url);
 
-    if (url.includes(REDIRECT_URI + "/?code=")) {
-      const { code } = params as { code: string };
-      getAccessTokenFromCode(code).then(
-        (token: { access_token: string; refresh_token: string }) => {
-          console.log("~~~~~~~~~~~~~~~ gotTokenFromCode", token);
-          params = {
-            ...params,
-            access_token: token.access_token,
-            refresh_token: token.refresh_token,
-          };
-        }
-      );
-    }
+    const { code } = params as { code: string };
+    getAccessTokenFromCode(code).then(
+      (token: { access_token: string; refresh_token: string }) => {
+        params = {
+          ...params,
+          access_token: token.access_token,
+          refresh_token: token.refresh_token,
+        };
+
+        g_tokens = params;
+
+        chrome.storage.local.set({ g_tokens: JSON.stringify(g_tokens) });
+
+        chrome.tabs.remove(tab.id);
+      }
+    );
+  }
+
+  if (url && url.includes(REDIRECT_URI + "/#token_type")) {
+    const params = getParams(url);
 
     g_tokens = params;
-
-    console.log("~~~~~~~~~~~~~~~ g_tokens", g_tokens);
 
     chrome.storage.local.set({ g_tokens: JSON.stringify(g_tokens) });
 
@@ -66,6 +67,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       break;
     }
     case "GIVE_BOT_GUILD_PERMISSIONS": {
+      givePermissions(sendResponse);
       break;
     }
     case "SEND_SONG_TO_DISCORD": {
@@ -183,20 +185,25 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 type SendResponse = (response?: unknown) => void;
 
 const checkAuth = (sendResponse: SendResponse) => {
+  console.log({ g_tokens });
+
   fetchDiscordWithAuth({
     endpoint: CURRENT_USER_API,
     method: "GET",
     tokens: g_tokens,
   })
-    .then((response) => {
-      response
-        .json()
-        .then((data: unknown) => sendResponse({ complete: true, data }));
-    })
-    .catch(() => {
+    .then((data: unknown) => sendResponse({ complete: true, data }))
+    .catch((e) => {
+      console.error(e);
       sendResponse({
         complete: true,
         error: "Error in getting user info",
       });
     });
+};
+
+const givePermissions = (sendResponse: SendResponse) => {
+  const authUrl = getAuthUrl();
+  openNewTab(authUrl);
+  sendResponse({ complete: true });
 };

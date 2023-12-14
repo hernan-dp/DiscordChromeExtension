@@ -63,7 +63,7 @@ export const fetchDiscordWithAuth = async ({
   const body = payload ? JSON.stringify(payload) : undefined;
   const controller = new AbortController();
   const headers = new Headers({
-    Authorization: `${tokens.token_type} ${tokens.access_token}`,
+    Authorization: `Bearer ${tokens.access_token}`,
     "Content-Type": "application/x-www/form-urlencoded",
   });
 
@@ -77,6 +77,8 @@ export const fetchDiscordWithAuth = async ({
       signal: controller.signal,
     });
 
+    if (!response.ok) throw new Error(`${response.status}`);
+
     return response.json();
   } catch (error) {
     const authToken = (await getAccessToken(tokens.refresh_token)) as {
@@ -89,13 +91,16 @@ export const fetchDiscordWithAuth = async ({
       method,
       body,
       headers: {
-        Authorization: `${authToken.token_type} ${authToken.access_token}`,
+        Authorization: `Bearer ${authToken.access_token}`,
         "Content-Type": "application/x-www/form-urlencoded",
       },
       signal: controller.signal,
     }).catch((error) => {
       throw new Error(error);
     });
+
+    if (!responseWithRefreshToken.ok)
+      throw new Error(`${responseWithRefreshToken.status}`);
 
     return responseWithRefreshToken.json();
   }

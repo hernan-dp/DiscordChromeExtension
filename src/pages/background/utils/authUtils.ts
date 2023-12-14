@@ -63,3 +63,11 @@ export const getAccessToken = (refresh_token) => {
       });
   });
 };
+
+export const getAuthUrl = () => {
+  const authUrl = `https://discord.com/api/oauth2/authorize?client_id=${CLIENT_ID}&permissions=8&response_type=code&redirect_uri=${encodeURIComponent(
+    REDIRECT_URI
+  )}&scope=guilds+bot+identify`;
+
+  return authUrl;
+};
