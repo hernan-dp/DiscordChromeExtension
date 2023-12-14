@@ -1,5 +1,5 @@
 import React from "react";
-import discordLogo from "../../../assets/img/discord-icon.svg";
+import discordLogo from "../../../../assets/img/discord-icon.svg";
 
 const LoadingPopup = () => {
   return (

@@ -1,5 +1,7 @@
 // Fetch Utils
 
+import { getAccessToken } from "./authUtils";
+
 type FetchApi = {
   endpoint: string;
   method: string;
@@ -46,7 +48,7 @@ export const fetchDiscord = ({ endpoint, method, payload }: FetchApi) => {
   });
 };
 
-export const fetchDiscordWithAuth = ({
+export const fetchDiscordWithAuth = async ({
   endpoint,
   method,
   tokens,
@@ -55,6 +57,7 @@ export const fetchDiscordWithAuth = ({
   tokens: {
     token_type: string;
     access_token: string;
+    refresh_token: string;
   };
 }) => {
   const body = payload ? JSON.stringify(payload) : undefined;
@@ -66,10 +69,34 @@ export const fetchDiscordWithAuth = ({
 
   setTimeout(() => controller.abort(), 20000);
 
-  return fetch(`${DISCORD_URL}${endpoint}`, {
-    method,
-    body,
-    headers,
-    signal: controller.signal,
-  });
+  try {
+    const response = await fetch(`${DISCORD_URL}${endpoint}`, {
+      method,
+      body,
+      headers,
+      signal: controller.signal,
+    });
+
+    return response.json();
+  } catch (error) {
+    const authToken = (await getAccessToken(tokens.refresh_token)) as {
+      token_type: string;
+      access_token: string;
+      refresh_token: string;
+    };
+
+    const responseWithRefreshToken = await fetch(`${DISCORD_URL}${endpoint}`, {
+      method,
+      body,
+      headers: {
+        Authorization: `${authToken.token_type} ${authToken.access_token}`,
+        "Content-Type": "application/x-www/form-urlencoded",
+      },
+      signal: controller.signal,
+    }).catch((error) => {
+      throw new Error(error);
+    });
+
+    return responseWithRefreshToken.json();
+  }
 };

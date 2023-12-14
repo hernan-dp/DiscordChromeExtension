@@ -1,7 +1,7 @@
-import Popup from "@pages/popup/Popup";
 import "@src/style/app.css";
 import { createRoot } from "react-dom/client";
 import refreshOnUpdate from "virtual:reload-on-update-in-view";
+import MainApp from "./components/MainApp/MainApp";
 
 refreshOnUpdate("pages/popup");
 
@@ -12,11 +12,7 @@ function init() {
   }
   const root = createRoot(appContainer);
 
-  const openOAuth = () => {
-    chrome.runtime.sendMessage({ type: "GIVE_BOT_GUILD_PERMISSIONS" });
-  };
-
-  root.render(<Popup openOAuth={openOAuth} />);
+  root.render(<MainApp />);
 }
 
 init();
