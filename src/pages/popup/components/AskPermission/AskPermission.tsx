@@ -4,7 +4,7 @@ import useGetPermissions from "../../hooks/useGetPermissions";
 const AskPermission = () => {
   const { mutate } = useGetPermissions();
   return (
-    <>
+    <div className="flex min-h-[20rem] w-96 flex-col items-center justify-center bg-[#313338] px-10 py-5">
       <img
         src={chrome.runtime.getURL(discordLogo)}
         alt="discordLogo"
@@ -20,7 +20,7 @@ const AskPermission = () => {
       >
         GIVE PERMISSIONS
       </button>
-    </>
+    </div>
   );
 };
 

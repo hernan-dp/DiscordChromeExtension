@@ -10,7 +10,11 @@ type FetchApi = {
 
 const BASE_URL = "http://localhost:3000/api";
 
-export const fetchLocalServer = ({ endpoint, method, payload }: FetchApi) => {
+export const fetchLocalServer = async ({
+  endpoint,
+  method,
+  payload,
+}: FetchApi) => {
   const body = payload ? JSON.stringify(payload) : undefined;
   const controller = new AbortController();
   const headers = new Headers({
@@ -20,12 +24,16 @@ export const fetchLocalServer = ({ endpoint, method, payload }: FetchApi) => {
 
   setTimeout(() => controller.abort(), 20000);
 
-  return fetch(`${BASE_URL}${endpoint}`, {
+  const result = await fetch(`${BASE_URL}${endpoint}`, {
     method,
     body,
     headers,
     signal: controller.signal,
   });
+
+  if (!result.ok) throw new Error(`${result.status}`);
+
+  return result.json();
 };
 
 const DISCORD_URL = "https://discord.com/api";

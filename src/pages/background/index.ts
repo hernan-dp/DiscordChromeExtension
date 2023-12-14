@@ -1,6 +1,6 @@
 import reloadOnUpdate from "virtual:reload-on-update-in-background-script";
 import { getParams, openNewTab } from "./misc";
-import { fetchDiscordWithAuth } from "./utils/fetchUtils";
+import { fetchDiscordWithAuth, fetchLocalServer } from "./utils/fetchUtils";
 import { getAccessTokenFromCode, getAuthUrl } from "./utils/authUtils";
 
 reloadOnUpdate("pages/background");
@@ -70,10 +70,17 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       givePermissions(sendResponse);
       break;
     }
-    case "SEND_SONG_TO_DISCORD": {
+    case "GET_GUILDS": {
+      getGuilds(sendResponse);
       break;
     }
-    case "GET_GUILDS": {
+
+    case "GET_BOT_GUILDS": {
+      getBotGuilds(sendResponse, request.payload);
+      break;
+    }
+
+    case "SEND_SONG_TO_DISCORD": {
       break;
     }
 
@@ -185,8 +192,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 type SendResponse = (response?: unknown) => void;
 
 const checkAuth = (sendResponse: SendResponse) => {
-  console.log({ g_tokens });
-
   fetchDiscordWithAuth({
     endpoint: CURRENT_USER_API,
     method: "GET",
@@ -202,8 +207,42 @@ const checkAuth = (sendResponse: SendResponse) => {
     });
 };
 
+const getGuilds = (sendResponse: SendResponse) => {
+  fetchDiscordWithAuth({
+    endpoint: "/users/@me/guilds",
+    method: "GET",
+    tokens: g_tokens,
+  })
+    .then((data: unknown) => sendResponse({ complete: true, data }))
+    .catch((e) => {
+      console.error(e);
+      sendResponse({
+        complete: true,
+        error: "Error in getting guilds",
+      });
+    });
+};
+
 const givePermissions = (sendResponse: SendResponse) => {
   const authUrl = getAuthUrl();
   openNewTab(authUrl);
   sendResponse({ complete: true });
+};
+
+const getBotGuilds = (sendResponse: SendResponse, guildIds) => {
+  const searchParams = new URLSearchParams({ guildIds });
+  const endpoint = `/get-discord-guilds/?${searchParams}`;
+
+  fetchLocalServer({
+    endpoint,
+    method: "GET",
+  })
+    .then((data) => sendResponse({ complete: true, data }))
+    .catch((e) => {
+      console.error(e);
+      sendResponse({
+        complete: true,
+        error: "Error in getting guilds from server",
+      });
+    });
 };
