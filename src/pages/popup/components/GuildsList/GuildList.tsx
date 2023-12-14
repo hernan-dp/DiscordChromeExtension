@@ -16,9 +16,9 @@ const GuildList = ({ user }: GuildListProps) => {
   });
 
   return (
-    <div className="flex min-h-[320px] w-96 flex-col bg-[#313338] px-5 py-2 text-white">
+    <div className="flex max-h-[600px] min-h-[320px] w-96  flex-col overflow-auto bg-[#313338] px-5 py-2 text-white">
       <div className="flex flex-col gap-10">
-        <div className="flex justify-evenly items-center">
+        <div className="flex items-center justify-evenly">
           <img
             src={discordPath}
             alt="discordLogo"
@@ -47,9 +47,11 @@ const GuildList = ({ user }: GuildListProps) => {
           </div>
         </div>
 
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-1">
           <h1 className="text-lg">Servers with the extension:</h1>
-          <div className="flex flex-col gap-4">
+          <h1 className="text-md">Select the channel to post music</h1>
+
+          <div className="mt-4 flex flex-col gap-4">
             {isSuccess &&
               filteredGuilds?.map((guild) => {
                 return <GuildItem key={guild.id} {...guild} />;
