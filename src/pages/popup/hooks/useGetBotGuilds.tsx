@@ -8,8 +8,6 @@ const getGuilds = async (guildIds: string[]) => {
     guildIds
   );
 
-  console.log(guilds);
-
   return guilds;
 };
 
