@@ -9,7 +9,7 @@ const manifest: chrome.runtime.ManifestV3 = {
   version: packageJson.version,
   description: packageJson.description,
   options_page: "src/pages/options/index.html",
-  permissions: ["activeTab", "tabs"],
+  permissions: ["activeTab", "tabs", "storage"],
   background: {
     service_worker: "src/pages/background/index.js",
     type: "module",
@@ -18,7 +18,7 @@ const manifest: chrome.runtime.ManifestV3 = {
     default_popup: "src/pages/popup/index.html",
     default_icon: "icon-34.png",
   },
-  host_permissions: ["https://discord.com/*"],
+  host_permissions: ["https://discord.com/*", "http://localhost:3000/*"],
   icons: {
     "128": "icon-128.png",
   },

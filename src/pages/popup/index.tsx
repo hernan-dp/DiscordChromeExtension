@@ -13,7 +13,7 @@ function init() {
   const root = createRoot(appContainer);
 
   const openOAuth = () => {
-    chrome.runtime.sendMessage({ type: "CLICKED_OAUTH_BTN" });
+    chrome.runtime.sendMessage({ type: "GIVE_BOT_GUILD_PERMISSIONS" });
   };
 
   root.render(<Popup openOAuth={openOAuth} />);

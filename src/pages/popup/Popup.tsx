@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import discordLogo from "../../assets/img/discord-icon.svg";
+import LoadingPopup from "./components/LoadingPopup/LoadingPopup";
+import GuildList from "./components/GuildsList/GuildList";
 
 const Popup = ({
   openOAuth,
@@ -8,13 +10,18 @@ const Popup = ({
   hasAuth?: () => boolean;
 }) => {
   const [auth, setAuth] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     chrome.runtime.sendMessage({ type: "CHECK_AUTH" }, function (response) {
-      console.log("response", response)
+      setLoading(false);
       setAuth(!!response);
     });
   }, []);
+
+  if (loading) return <LoadingPopup />;
+
+  if (auth) return <GuildList />;
 
   return (
     <div className="flex w-96 flex-col items-center bg-[#313338] px-10 py-5">
@@ -25,7 +32,7 @@ const Popup = ({
       />
 
       <h1 className="mx-5 text-center text-2xl font-bold text-white">
-        {auth ? "Authorized" : "Give Permissions to the extension"}
+        Give permissions to the extension
       </h1>
       {!auth && (
         <button
